@@ -36,7 +36,7 @@ This is done in a setup for vagrant with EngineAPI PHP, but doesn't need to be t
 </html>
 ``` 
 
-JS 
+## JS 
 ``` 
 // set vars and instantiate new classes
     var QRCode   = false;

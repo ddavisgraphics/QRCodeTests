@@ -1,45 +1,102 @@
-# Engine Framework 4.0 - LAMP Stack
+# QR Code Tests
 
-My startup for using EngineAPI to rapidly dev app.
+This is done in a setup for vagrant with EngineAPI PHP, but doesn't need to be this could have been a static test.  The files needed are described below for your personal need.  
 
-## Templates
-  - Application
-  -- This folder will be linked directly to the EngineAPI so that all files in this will be able to be used in the application making for easy skinning and adjustments on the fly.
-  - FormBuilder
-  -- This folder will be linked into the EngineAPI Modules FormBuilder Templates so that you can create new templates and modify templates directly that will affect the formBuilder layout and look.
+## HTML 
+```
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <meta name="viewport" content="initial-scale=1.0">
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+        <title> Camera Application Test</title>
+    </head>
 
-## Backend Adjustments / Per Application
- - Modify Vagrant File Name
- - Modify httpd.conf file for Document Root
- - Modify the Variables in the bootstrap.sh file
- - Modify SQL Tables to fit your application
- - Adjust and Modify ReadMe for Documentation Purposes.
- - You may also have to modify the defaultPrivate secion when launching the application
+    <body>
+        <select class="imageType" id="imageType">
+            <option value=""> Select an Image Type </option>
+            <option value="pic"> Picture </option>
+            <option value="qr"> QR Code </option>
+        </select>
 
-## FrontEnd Stack
- - In the includes file there is a folder of templateIncludes specifically for your templates in the application.  For this my frontend stack is going to consist of bower, grunt, scss, and depending upon project Jquery or another JS framework.
+        <!-- Inputs -->
+        <input type="file" accept="image/*" id="pictureField" src="">
 
-- Bower
-   * For getting and managing dependencies
+        <div style="width:300px;">
+            <img id="insertedImage" style="width:100%; height:auto;" />
+        </div>
 
-- Grunt
-   * For Preprocessing, Cancatenation, Minification, and Uglification of JS and SCSS.
 
-- The SCSS stack uses
-   * bourbon
-   * neat
-   * normalize
-   * and custom modules easy to adjust
-   * the utilities folder  is comprised of different items you may need as breakpoints or extensions, but remember that you may need to change varaibles and it may not work right off the bat.
+    <!-- JS Dependencies -->
+    <script src="/includes/templateIncludes/js/bower_components/jquery/dist/jquery.min.js"></script>
+    <script src="/includes/templateIncludes/js/bower_components/qcode-decoder/build/qcode-decoder.min.js"></script>
+    <script src="/includes/templateIncludes/js/main.js"></script>
 
-## Bower Setup
-  - Needs NPM / Node
-    * ```sudo npm install -g bower``` _installs bower_
-    * ```bower install {package} --save``` _example of installing dependencies from bower_
+    </body>
+</html>
+``` 
 
-## Grunt Setup
-- Needs NPM / Node
-    - ```sudo npm install -g grunt-cli``` _installs grunt_
-    - ```sudo npm install grunt --save-dev``` _example of installing grunt dependencies_
-    - Modify Grunt file, if need arises otherwise to begin watching js/css cd into project and type ```grunt``` before closing or changing branches use ```control + c```.
+JS 
+``` 
+// set vars and instantiate new classes
+    var QRCode   = false;
 
+// Create Event Handles
+    $("#imageType").on("change", pictureType);
+    ("#pictureField").on("change", handleImageUpload);
+
+// Create Functions for Handlers
+//
+function handleImageUpload(event){
+    var qrReader = new QCodeDecoder();
+    var reader   = new FileReader();
+
+    // get files
+    var uploadedFiles = event.target.files;
+    var imageFile     = event.target.files[0];
+    var dataURI = "";
+
+    // create a preview
+    var imagePreview = $('#insertedImage');
+
+    // file exsists load the image into the reader
+    if(imageFile){
+
+        // create reader events for file
+        reader.onload = function(event) {
+            dataURI = reader.result;
+            imagePreview.attr('src', dataURI);
+
+            // read the qr code if the image is a QR Image
+            if(QRCode){
+                console.log('QRCode happening');
+                console.log(dataURI);
+                qrReader.decodeFromImage(dataURI,function(error,result){
+                    window.location.href = result;
+                });
+            }
+        };
+
+        reader.onerror = function(event) {
+            console.error("File could not be read! Code " + event.target.error.code);
+        };
+
+        reader.readAsDataURL(imageFile);
+    }
+}
+
+function pictureType(event){
+    value = $(this).val();
+    if(value == 'qr'){
+        QRCode = true;
+        console.log(QRCode + ": QRcode");
+    } else {
+        QRCode = false;
+        console.log(QRCode + ": QRcode");
+    }
+}
+``` 
+
+## Bower Components 
+- QR Code Decoder : http://cirocosta.github.io/qcode-decoder/
+- JQuery : https://jquery.com/download/ 
